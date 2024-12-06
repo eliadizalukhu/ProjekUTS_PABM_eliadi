@@ -21,7 +21,7 @@ const Home: React.FC<HomeProps> = ({ navigation }) => {
     <View style={styles.container}>
       <ScrollView>
         <View style={styles.header}>
-          <Text style={styles.title}>Toko Salad Buah Sukabumi</Text>
+          <Text style={styles.title}>Toko Salad Sukabumi</Text>
           <Image
             source={require('../assets/img/salad-eliadi.png')}
             style={styles.profil}

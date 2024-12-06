@@ -1,44 +1,39 @@
-import React, { useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Button, StyleSheet, ActivityIndicator } from 'react-native';
 
 interface Product {
   id: number;
   name: string;
   description: string;
   price: number;
-
 }
 
-const products: Product[] = [
-  { 
-    id: 1, 
-    name: 'Salad Buah', 
-    description: 'Salad buah segar dengan berbagai buah pilihan.', 
-    price: 25000, 
-  },
-  { 
-    id: 2, 
-    name: 'Salad Sayur', 
-    description: 'Salad sayur sehat dengan berbagai sayuran segar.', 
-    price: 20000,
-  },
-  { 
-    id: 3, 
-    name: 'Minuman', 
-    description: 'Minuman segar untuk menemani salad anda.', 
-    price: 22000,
-  },
-  { 
-    id: 4, 
-    name: 'Buah Asli', 
-    description: 'Buah asli pilihan yang segar dan manis.', 
-    price: 15000,
-  },
-];
-
-
 const Detail = () => {
+  const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch data dari API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('http://192.168.1.23:3000/routes/products/detail'); 
+        if (!response.ok) {
+          throw new Error('Gagal mengambil data produk');
+        }
+        const data: Product[] = await response.json();
+        setProducts(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const handleProductClick = (productId: number) => {
     const product = products.find((p) => p.id === productId);
@@ -49,12 +44,20 @@ const Detail = () => {
     <View style={styles.container}>
       <Text style={styles.header}>Detail Produk</Text>
       
-      <View style={styles.buttonsContainer}>
-        <Button title="Salad Buah" onPress={() => handleProductClick(1)} />
-        <Button title="Salad Sayur" onPress={() => handleProductClick(2)} />
-        <Button title="Minuman" onPress={() => handleProductClick(3)} />
-        <Button title="Buah Asli" onPress={() => handleProductClick(4)} />
-      </View>
+      {loading && <ActivityIndicator size="large" color="#0000ff" />}
+      {error && <Text style={styles.error}>{error}</Text>}
+      
+      {!loading && !error && (
+        <View style={styles.buttonsContainer}>
+          {products.map((product) => (
+            <Button
+              key={product.id}
+              title={product.name}
+              onPress={() => handleProductClick(product.id)}
+            />
+          ))}
+        </View>
+      )}
 
       {selectedProduct && (
         <View style={styles.productDetail}>
@@ -91,6 +94,11 @@ const styles = StyleSheet.create({
   productName: {
     fontSize: 20,
     fontWeight: 'bold',
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 10,
   },
 });
 
